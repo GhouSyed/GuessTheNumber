@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+   <style>
+      body{
+      text-align: center;
+      }
+      .buttonMakeUp {
+      padding: 4px;
+      background-color: #e89a5f;
+      color: #000;
+      border-radius: 5px;
+      font-size: 30px;
+      }
+      form > .form-field {
+      margin : 5px;
+      }
+      .form-field > input {
+      padding: 5px;
+      font-size: 30px;
+      width: 25px;
+      margin: 5px;
+      }
+      .form-field > label {
+      font-weight: 30px;
+      }
+      body{
+      background-color: #0ee6b3;
+      color: #000;
+      display: grid;
+      height: 100vh;
+      grid-template-columns: 20% 60% 20%;
+      grid-template-rows: 20% 60% 20%;
+      }
+      /* p{
+      color: cornsilk;
+      } */
+      .centered-grid {
+        align-self:center;
+        grid-column-start: 2;
+        grid-row-start: 2;
+      }
+   </style>
+   <body>
+       <div class='centered-grid'>
+        <h1>Guess The Number</h1>
+        <form name='cabForm'>
+           <div class="form-field" id='dynamicInputs'>
+           </div>
+           <div class='form-field'>
+              <button id='submitGuess' type='button' class='buttonMakeUp'>Guess me!</button>
+           </div>
+        </form>
+        <div>
+           <div id='timer'></div>
+           <div id='myFirstGuess'></div>
+        </div>
+       </div>
+      <script >
+         var target = [];
+         var b=0,c=0;
+         var attempts =0;
+         var myGuesses = "";
+         var guesssInputs = ['g1','g2','g3','g4','g5'];
+         var inputs = "";
+         guesssInputs.forEach(g => {
+         inputs += '<input  id="'+g+'" name="'+g+'">';
+         });
+         
+         document.getElementById("dynamicInputs").innerHTML = inputs;
+         
+         guesssInputs.forEach(g => {
+         document.getElementById(g).oninput = function(){
+         if(document.getElementById(g).value.length == 1){
+         const temp = document.getElementById(g).value;
+         document.getElementById(g).value = temp.split('')[0];
+         if((guesssInputs.indexOf(g)+1) == guesssInputs.length)
+             document.getElementById('submitGuess').click();
+         else{
+             document.getElementById(getNextActive(guesssInputs.indexOf(g)) ).focus();
+         }
+         }
+         }
+         });
+         var getNextActive = function(gIndex) {
+         for(gIndex++;gIndex<guesssInputs.length;gIndex++){
+         if(!document.getElementById(guesssInputs[gIndex]).disabled)
+         break;
+         }
+         return guesssInputs[gIndex];
+         }
+         var interval = null; 
+         var startTimer = function(){
+         if(!interval){
+         clearInterval(interval);
+         interval = null
+         }
+         var timer = 1;
+         interval =   setInterval(function(){
+         document.getElementById("timer").innerHTML = "<p>Time Elapsed:"+timer+" Seconds.</p>";
+         if(timer > 10)
+         document.getElementById("timer").innerHTML = "<p style='color:red'>Time up is nearing:"+timer+" Seconds.</p>";
+         if(timer == 15){
+         clearInterval(interval);
+         interval = null;
+         myGuesses +="<p style='color:red'>Request Timed Out</p><h1>Game Over!!!!</h1>";
+         clearall();
+         }
+         timer++;
+         },1000)
+         }
+         
+         document.getElementById('submitGuess').onclick = function() {
+         submitGuess();
+         // startTimer();
+         };
+         
+         getRandomNumber = function(){
+         while(target.length <guesssInputs.length){
+         var myRandom =Math.ceil((Math.random()*10)%10);
+         if(target.indexOf(myRandom) < 0 && myRandom <10)  
+         target.push(myRandom)
+         }
+         // target.forEach(n=>console.log(n));
+         }
+         
+         getRandomNumber();
+         
+         
+         
+         var getGuess = function(){
+         var guess = [];
+         guesssInputs.forEach(g => {
+         guess.push( document.getElementById(g).value);
+         });
+         return guess;
+         }
+         
+         var enhanceOutput = function(bulls,cows){
+         clearBeforeEnhance();
+         enhance(bulls,'green');
+         enhance(cows,'red');
+         }
+         
+         var clearBeforeEnhance = function(){
+         guesssInputs.forEach(g => {
+         document.getElementById(g).value = "";
+         document.getElementById(g).style.color = "black";
+         });
+         }
+         
+         var enhance = function(matches,type){
+         matches.forEach(match=> {
+         document.getElementById(guesssInputs[match.index]).value = match.value;
+         document.getElementById(guesssInputs[match.index]).style.color = type;
+         if(type == "green")
+         document.getElementById(guesssInputs[match.index]).disabled = true;
+         });
+         }
+         
+         
+         var  submitGuess = function() {
+         attempts++;
+         if(attempts >7){
+         myGuesses +="<p style='color:red'>Out Of Attempts.</p><h1>Game Over!!!!</h1>";
+         clearall();
+         return;
+         }
+         
+         
+         var b=[],c=[];                                                            
+         var guess = getGuess();
+         for(var i=0;i<guesssInputs.length;i++)
+         {
+         if(target[i]==guess[i]){
+         b.push({"index":i,"value":target[i]});
+         }
+         for(var j=0;j<guesssInputs.length;j++)
+         {
+         if((target[i]== parseInt(guess[j]))&& (i!=j)){
+         c.push({"index":j,"value":target[i]});
+         }
+         }
+         }
+         enhanceOutput(b,c);
+         myGuesses +=  "<p>"+attempts+".Guess Number:"+guess+"</b></p>";
+         
+         if(b.length == guesssInputs.length){
+         myGuesses += "<p style='color:green'><b>You Won!Congrats!</b></p>";
+         clearall();
+         return;
+         } 
+         
+         document.getElementById("myFirstGuess").innerHTML = myGuesses ;
+         
+         if(attempts ==7){
+         myGuesses +="<p style='color:red'>Out Of Attempts.</p><h1>Game Over!!!!</h1>";
+         clearall();
+         return;
+         }
+         }
+         
+         clearall  = function(){
+         // document.getElementById('myGuess').value = "";
+         myGuesses += "<p>Target was:"+ target+"</p>";
+         document.getElementById("myFirstGuess").innerHTML = myGuesses ;
+         target =[];
+         getRandomNumber();
+         attempts =0 ;
+         myGuesses = "";
+         }
+      </script>
+   </body>
+</html>
